@@ -43,3 +43,14 @@ Get Attribute Claims
     - entrambi DEVONO salvare il valore ``jti`` contenuto nel payload del token Agid-JWT-Signature della richiesta per gestire i Segnali relativi alla disponibilità degli Attributi utili all'emissione in *deferred* di un Attestato Elettronico (vedere :ref:`signal-hub-endpoint:Elaborazione dei Segnali`);
     - la Fonte Autentica DEVE registrare il valore datetime fornito all'interno del parametro ``last_updated``, che indica data e orario dell'ultima volta che gli Attributi dell'Utente sono stati aggiornati nel database della Fonte Autentica;
     - il Credential Issuer DEVE leggere il valore ``last_updated`` ricevuto nella risposta per essere in grado di verificare se gli Attributi dell'Utente sono cambiati dall'ultima emissione di un Attestato Elettronico.
+
+La risposta in caso di successo (HTTP 200) restituisce un oggetto ``CredentialClaimsResponse`` formattato come **Signed JWT**.
+
+Essendo il token di risposta firmato, il Credential Issuer (Fruitore) DEVE verificare la firma per garantire l'integrità e l'autenticità dei dati ricevuti dalla Fonte Autentica.
+Il pattern tecnico per la verifica della firma DEVE seguire il modello di interoperabilità PDND:
+
+1. La Fonte Autentica **DEVE** firmare il JWT di risposta utilizzando una chiave privata la cui corrispondente chiave pubblica è stata caricata nel proprio **"Portachiavi Erogatore"** sulla piattaforma PDND.
+2. Il Credential Issuer **DEVE** recuperare la chiave pubblica necessaria alla verifica tramite le API dell'infrastruttura PDND, utilizzando il valore del parametro ``kid`` presente nell'header JOSE del JWT di risposta.
+
+.. warning::
+  Non sono previsti meccanismi alternativi di distribuzione del materiale crittografico (es. endpoint ``.well-known`` pubblici o distribuzione *out-of-band*). La gestione del trust DEVE rimanere all'interno del perimetro della piattaforma PDND.
