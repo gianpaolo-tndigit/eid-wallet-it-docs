@@ -4,30 +4,30 @@
 .. role:: raw-html(raw)
   :format: html
 
-Endpoint delle Fonti Autentiche
--------------------------------
+Authentic Source Endpoints
+--------------------------
 
-Catalogo degli e-Service PDND delle Fonti Autentiche
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+e-Service PDND Authentic Source Catalog
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Le Fonti Autentiche pubbliche DEVONO realizzare e rendere disponibile tramite PDND il seguente e-service al fine di rilasciare al Fornitore di Attestati Elettronici gli Attributi dell'Utente necessari per l'emissione di un Attestato Elettronico.
+Public Authentic Sources MUST provide the following e-Service through PDND to provide the Credential Issuer with User's attributes required to the issuance of a Digital Credential.
 
-L'e-service è descritto tramite una specifica OpenAPI in cui sono dettagliati i messaggi di richiesta, risposta ed errore.
+The e-service is described via an OpenAPI definition where the request, response, and error messages are detailed.
 
 .. only:: html
 
   .. note::
-    La Specifica OpenAPI è disponibile :raw-html:`<a href="OAS3-PDND-AS.html" target="_blank">qui</a>`.
-    Questa specifica OpenAPI può essere estesa dalle Fonti Autentiche, infatti, l'array ``attributeClaims`` PUÒ contenere proprietà aggiuntive specifiche di una particolare Credenziale. Queste proprietà aggiuntive, cosí come definito nella specifica OpenAPI, saranno inserite nella Credenziale dal Credential Issuer.
+    The base OpenAPI Specification is available :raw-html:`<a href="OAS3-PDND-AS.html" target="_blank">here</a>`.
+    This OpenAPI specification can be extended by the Authentic Sources, in fact, the array ``attributeClaims`` MAY contain additional properties specific to a particular Credential. These additional properties, as defined in the OpenAPI specification, will be inserted into the Credential by the Credential Issuer.
 
 .. only:: latex
 
   .. note::
-    La Specifica OpenAPI è disponibile :ref:`e-service-pdnd-template:Specifica OpenAPI della Fonte Autentica PDND`.
-    Questa specifica OpenAPI può essere estesa dalle Fonti Autentiche, infatti, l'array ``attributeClaims`` PUÒ contenere proprietà aggiuntive specifiche di una particolare Credenziale. Queste proprietà aggiuntive, cosí come definito nella specifica OpenAPI, saranno inserite nella Credenziale dal Credential Issuer.
+    The base OpenAPI Specification is available :ref:`e-service-pdnd-template:Authentic Source PDND OpenAPI Specification`.
+    This OpenAPI specification can be extended by the Authentic Sources, in fact, the array ``attributeClaims`` MAY contain additional properties specific to a particular Credential. These additional properties, as defined in the OpenAPI specification, will be inserted into the Credential by the Credential Issuer.
 
 Get Attribute Claims
-"""""""""""""""""""""""""""""""""""
+""""""""""""""""""""
 
 .. _authentic-source-endpoint-get-attribute-claims:
 .. list-table::
@@ -35,73 +35,73 @@ Get Attribute Claims
   :widths: 20 80
   :stub-columns: 1
 
-  * - **Descrizione**
-    - Questo servizio fornisce al Fornitore di Attestati Elettronici tutti gli attributi dell'Utente necessari per il rilascio di un Attestato Elettronico.
-  * - **Erogatore**
-    - Fonte Autentica
-  * - **Fruitore**
-    - Fornitore di Attestato Elettronico
+  * - **Description**
+    - This e-Service provides the Credential Issuer with all attribute claims necessary for the issuance of a Digital Credential.
+  * - **Provider**
+    - Authentic Source
+  * - **Consumer**
+    - Credential Issuer
 
 .. note::
-  La Fonte Autentica e il Credential Issuer DEVONO implementare la logica necessaria per tenere traccia delle richieste e delle risposte scambiate tramite questo e-Service, al fine di essere in grado di correlarle con la relativa emissione di un Attestato Elettronico. In particolare,
-    - entrambi DEVONO salvare il valore ``jti`` contenuto nel payload del token Agid-JWT-Signature della richiesta per gestire i Segnali relativi alla disponibilità degli Attributi utili all'emissione in *deferred* di un Attestato Elettronico (vedere :ref:`signal-hub-endpoint:Elaborazione dei Segnali`);
-    - la Fonte Autentica DEVE registrare il valore datetime fornito all'interno del parametro ``last_updated``, che indica data e orario dell'ultima volta che gli Attributi dell'Utente sono stati aggiornati nel database della Fonte Autentica;
-    - il Credential Issuer DEVE leggere il valore ``last_updated`` ricevuto nella risposta per essere in grado di verificare se gli Attributi dell'Utente sono cambiati dall'ultima emissione di un Attestato Elettronico.
+  The Authentic Source and the Credential Issuer MUST implement the necessary logic to keep track of the requests and responses exchanged via this e-Service, in order to be able to correlate them with the related issuance of a Digital Credential. In particular,
+    - both MUST save the ``jti`` value in the Agid-JWT-Signature payload of the request to manage Signals related to the deffered issuance of a Digital Credential (see :ref:`signal-hub-endpoint:Signals Processing`);
+    - the Authentic Source MUST record the datetime value provided within the ``last_updated`` parameter, which indicates the last time the User's attributes were updated in the Authentic Source's database;
+    - the Credential Issuer MUST read the ``last_updated`` value received in the response to be able to check if the User's attributes have changed since the last issuance of a Digital Credential.
 
-Mapping degli Stati del Ciclo di Vita degli Attestati Elettronici
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-Per garantire la coerenza tra il "Ciclo di Vita degli Attestati Elettronici" documentato in :ref:`credential-revocation:Ciclo di Vita degli Attestati Elettronici` e l'Enum status delle OpenAPI, la seguente mappatura e logica operativa DEVE essere applicata per il campo ``status`` negli ``attributeClaims``.
-
-**Direzionalità e Responsabilità:**
-I cambiamenti di stato di un Attestato Elettronico a livello di Fornitore di Attestati Elettronici NON implicano un cambiamento presso la Fonte Autentica. Al contrario, qualsiasi cambiamento di stato di un dataset presso la Fonte Autentica DEVE essere elaborato dal Fornitore di Attestati Elettronici per aggiornare lo stato tecnico dell'Attestato Elettronico.
-
-**Guida Operativa:**
-
-* **Validità Tecnica vs Amministrativa**: Gli Attestati Elettronici distinguono tra una **validità tecnica** stabilita dal Fornitore di Attestati Elettronici (claim ``iat`` ed ``exp``) e una **validità amministrativa** determinata dalla Fonte Autentica (claim ``issuance_date`` ed ``expiry_date``).
-* **Gerarchia delle Scadenze**: La scadenza tecnica (``exp``) NON DEVE essere successiva alla scadenza amministrativa (``expiry_date``). Per esempio, una patente di guida può essere amministrativamente valida per 10 anni, mentre l'Attestato Elettronico emesso può avere una scadenza tecnica di 1 anno.
-* **Riemissione**: Se un Attestato Elettronico raggiunge la sua scadenza tecnica (``exp``) ma il dataset è ancora amministrativamente valido, lo stato OpenAPI rimane ``VALID``, consentendo all'Attestato Elettronico di essere riemesso più volte entro l'arco temporale amministrativo.
-* **Verifica dei Metadati**: Il Fornitore di Attestati Elettronici DEVE verificare l'effettiva usabilità controllando sia i claim tecnici che le date amministrative.
-* **Irreversibilità**: Dopo una transizione a ``INVALID``, l'Attestato Elettronico non può tornare a uno stato ``VALID``. È richiesta una nuova emissione per un nuovo dataset. Questo si applica sia alla revoca esplicita che alla scadenza amministrativa.
-* **Elaborazione dei Segnali**: I Segnali DEVONO essere elaborati sequenzialmente. Se un Segnale invalida un Attestato Elettronico, i successivi Segnali di correzione per lo stesso oggetto vengono ignorati.
-
-**Mapping degli Stati e Logica dei Casi:**
-
-Il Fornitore di Attestati Elettronici DEVE aggiornare lo ``status`` dell'Attestato Elettronico in base ai Segnali ricevuti dalla Fonte Autentica via Signal Hub (``signalType=UPDATE``):
-
-* **Revoca**: Se un dataset viene revocato presso la Fonte Autentica (stato ``INVALID``), il Fornitore di Attestati Elettronici DEVE revocare gli Attestati Elettronici che utilizzano quel dataset (transizione di stato da ``VALID/SUSPENDED`` a ``INVALID``).
-* **Sospensione**: Se un dataset viene sospeso presso la Fonte Autentica (stato ``SUSPENDED``), il Fornitore di Attestati Elettronici DEVE sospendere gli Attestati Elettronici (transizione di stato da ``VALID`` a ``SUSPENDED``).
-* **Ripristino**: Se un dataset sospeso torna a essere ``VALID`` presso la Fonte Autentica, il Fornitore di Attestati Elettronici DEVE ripristinare la validità dell'Attestato Elettronico (transizione di stato da ``SUSPENDED`` a ``VALID``).
-* **Modifica**: Se un dataset viene modificato ma rimane ``VALID`` presso la Fonte Autentica, il Fornitore di Attestati Elettronici — rilevando il cambiamento tramite il campo ``last_updated`` — assegna lo stato tecnico ``ATTRIBUTE_UPDATE`` all'Attestato Elettronico. Questo avvia un flusso di riemissione quando l'Istanza del Wallet controlla lo stato.
-* **Scadenza Amministrativa**:
-    * **Scenario A (Basato sui metadati)**: Se ``expiry_date`` è stata condivisa con il Fornitore di Attestati Elettronici nei metadati, la Fonte Autentica NON invia Segnali alla scadenza; il Fornitore di Attestati Elettronici gestisce il ciclo di vita in modo indipendente garantendo che l'``exp`` tecnico sia <= ``expiry_date``.
-    * **Scenario B (Basato sui segnali)**: Se ``expiry_date`` NON è presente nei metadati e il dataset scade, la Fonte Autentica DEVE impostare il suo stato su ``INVALID`` e inviare un Segnale via Signal Hub; il Fornitore di Attestati Elettronici revoca quindi gli Attestati Elettronici (transizione di stato a ``INVALID``).
-
-Esempio di risposta della Authentic Source
+Credential Lifecycle States Mapping
 """"""""""""""""""""""""""""""""""""""""""
 
-La risposta ha come HTTP Content-Type ``application/json``. Di seguito un esempio concreto con dati fittizi per chiarire forma e contenuto attesi.
+To ensure consistency between the "Electronic Attestation Lifecycle" documented in :ref:`credential-revocation:Digital Credential Lifecycle` and the OpenAPI status Enum, the following mapping and operational logic MUST be applied for the ``status`` field in the ``attributeClaims``.
+
+**Directionality and Responsibility:**
+State changes of a Digital Credential at the Credential Issuer level DO NOT imply a change at the Authentic Source. Conversely, any state change of a dataset at the Authentic Source MUST be processed by the Credential Issuer to update the technical Digital Credential status.
+
+**Operational Guidance:**
+
+* **Technical vs Administrative Validity**: Digital Credentials distinguish between a **technical validity** set by the Credential Issuer (claims ``iat`` and ``exp``) and an **administrative validity** determined by the Authentic Source (claims ``issuance_date`` and ``expiry_date``).
+* **Expiry Hierarchy**: The technical expiry (``exp``) MUST NOT be later than the administrative expiry (``expiry_date``). For example, a driver's license may be administratively valid for 10 years, while the issued Digital Credential may have a technical expiry of 1 year.
+* **Re-issuance**: If a Digital Credential reaches its technical expiry (``exp``) but the dataset is still administratively valid, the OpenAPI status remains ``VALID``, allowing the Digital Credential to be re-issued multiple times within the administrative timeframe.
+* **Metadata Verification**: The Credential Issuer MUST verify the effective usability by checking both the technical claims and the administrative dates.
+* **Irreversibility**: After a transition to ``INVALID``, the Digital Credential cannot return to a ``VALID`` state. A new issuance is required for a new dataset. This applies to both explicit revocation and administrative expiry.
+* **Signal Processing**: Signals MUST be processed sequentially. If a Signal invalidates a Digital Credential, subsequent correction Signals for the same object are ignored.
+
+**Status Mapping and Case Logic:**
+
+The Credential Issuer MUST update the Digital Credential ``status`` based on Signals received from the Authentic Source via Signal Hub (``signalType=UPDATE``):
+
+* **Revocation**: If a dataset is revoked at the Authentic Source (status ``INVALID``), the Credential Issuer MUST revoke the Digital Credentials that use that dataset (status transition from ``VALID/SUSPENDED`` to ``INVALID``).
+* **Suspension**: If a dataset is suspended at the Authentic Source (status ``SUSPENDED``), the Credential Issuer MUST suspend the Digital Credentials (status transition from ``VALID`` to ``SUSPENDED``).
+* **Restoration**: If a suspended dataset returns to ``VALID`` at the Authentic Source, the Credential Issuer MUST restore the Digital Credential validity (status transition from ``SUSPENDED`` to ``VALID``).
+* **Modification**: If a dataset is modified but remains ``VALID`` at the Authentic Source, the Credential Issuer—detecting the change via the ``last_updated`` field—assigns the technical status ``ATTRIBUTE_UPDATE`` to the Digital Credential. This triggers a re-issuance flow when the Wallet Instance checks the status.
+* **Administrative Expiry**:
+    * **Scenario A (Metadata-driven)**: If ``expiry_date`` was shared with the Credential Issuer in metadata, the Authentic Source DOES NOT send Signals upon expiry; the Credential Issuer manages the lifecycle independently ensuring technical ``exp`` <= ``expiry_date``.
+    * **Scenario B (Signal-driven)**: If ``expiry_date`` is NOT present in metadata and the dataset expires, the Authentic Source MUST set its status to ``INVALID`` and send a Signal via Signal Hub; the Credential Issuer then revokes the Digital Credentials (status transition to ``INVALID``).
+
+Example of Authentic Source response
+"""""""""""""""""""""""""""""""""""""
+
+The endpoint response MUST use the HTTP Content-Type set to ``application/json``. Below is a concrete example with fictitious data to clarify the expected shape and content.
 
 .. literalinclude:: ../../examples/credential-claims-response-example.json
   :language: json
-  :caption: Esempio di payload JSON di risposta (Get Attribute Claims)
+  :caption: Example of the response JSON payload (Get Attribute Claims)
 
-In sintesi:
+In summary:
 
-- **userClaims**: dati anagrafici dell'utente (nome, cognome, data/luogo di nascita, codice fiscale o numero di identificazione). Almeno uno tra ``tax_id_code`` e ``personal_administrative_number`` è richiesto se si forniscono user claims.
-- **attributeClaims**: array di dataset; ogni elemento **DEVE** contenere ``object_id``, ``status`` (VALID | INVALID | SUSPENDED), ``last_updated`` (formato ISO 8601), più eventuali attributi aggiuntivi specifici del dataset (es. ``nationality``, ``residence_address``).
-- **metadataClaims**: array di metadati per dataset (``object_id`` obbligatorio; ``issuance_date`` e ``expiry_date`` opzionali).
-- **interval**: obbligatorio se non è presente il parametro ``claims`` nella richiesta; indica i secondi da attendere prima di ripetere la richiesta (es. 864000 = 10 giorni).
+- **userClaims**: user identity data (first name, family name, date/place of birth, tax id or personal administrative number). At least one of ``tax_id_code`` and ``personal_administrative_number`` is required when providing user claims.
+- **attributeClaims**: array of datasets; each element **MUST** contain ``object_id``, ``status`` (VALID | INVALID | SUSPENDED), ``last_updated`` (ISO 8601 format), plus any dataset-specific attributes (e.g. ``nationality``, ``residence_address``).
+- **metadataClaims**: array of metadata per dataset (``object_id`` required; ``issuance_date`` and ``expiry_date`` optional).
+- **interval**: required when the request does not include a ``claims`` parameter; indicates the number of seconds to wait before repeating the request (e.g. 864000 = 10 days).
 
-La risposta in caso di successo (HTTP 200) restituisce un oggetto ``CredentialClaimsResponse`` formattato come **Payload JSON**, accompagnato dagli header di integrità ``Agid-JWT-Signature`` e ``Digest``.
+The successful response (HTTP 200) returns a ``CredentialClaimsResponse`` object formatted as a **JSON Payload**, accompanied by the ``Agid-JWT-Signature`` and ``Digest`` integrity headers.
 
-Verifica della Firma e Gestione Chiavi
-''''''''''''''''''''''''''''''''''''''
+Signature Verification and Key Management
+'''''''''''''''''''''''''''''''''''''''''
 
-Il Credential Issuer (Fruitore) DEVE verificare l'integrità e l'autenticità della risposta JSON validando gli header ``Agid-JWT-Signature`` e ``Digest`` ricevuti dalla Fonte Autentica.
+The Credential Issuer (Consumer) MUST verify the integrity and authenticity of the JSON response by validating the ``Agid-JWT-Signature`` and ``Digest`` headers received from the Authentic Source.
 
-Il processo di verifica e recupero delle chiavi DEVE seguire rigorosamente il pattern di sicurezza **INTEGRITY_REST_02** definito per gli **e-Service PDND**.
-Si rimanda all'Appendice tecnica (Sezione :ref:`e-service-pdnd:e-Service PDND`) per i dettagli sulla validazione della firma JWT e per le specifiche sul recupero della chiave pubblica dell'Erogatore tramite API di Interoperabilità.
+The signature verification and key retrieval process MUST strictly follow the **INTEGRITY_REST_02** standard pattern defined for **PDND e-Services**.
+Please refer to the Technical Appendix (Section :ref:`e-service-pdnd:e-Service PDND`) for details on JWT signature validation and specifications for retrieving the Provider's public key via the Interoperability API.
 
 .. warning::
-  Non sono ammessi meccanismi alternativi di distribuzione del materiale crittografico (es. endpoint ``.well-known`` pubblici esposti direttamente dalla Fonte Autentica o distribuzione *out-of-band*). La gestione del trust DEVE rimanere centralizzata all'interno del perimetro dell'infrastruttura PDND come descritto nei riferimenti sopra citati.
+  Alternative mechanisms for distributing cryptographic material (e.g., public ``.well-known`` endpoints directly exposed by the Authentic Source or *out-of-band* distribution) are not allowed. Trust management MUST remain centralized within the perimeter of the PDND infrastructure as described in the references cited above.
