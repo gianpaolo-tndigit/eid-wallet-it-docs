@@ -91,7 +91,7 @@ In sintesi:
 - **userClaims**: dati anagrafici dell'utente (nome, cognome, data/luogo di nascita, codice fiscale o numero di identificazione). Almeno uno tra ``tax_id_code`` e ``personal_administrative_number`` è richiesto se si forniscono user claims.
 - **attributeClaims**: array di dataset; ogni elemento **DEVE** contenere ``object_id``, ``status`` (VALID | INVALID | SUSPENDED), ``last_updated`` (formato ISO 8601), più eventuali attributi aggiuntivi specifici del dataset (es. ``nationality``, ``residence_address``).
 - **metadataClaims**: array di metadati per dataset (``object_id`` obbligatorio; ``issuance_date`` e ``expiry_date`` opzionali).
-- **interval**: obbligatorio se non è presente il parametro ``claims`` nella richiesta; indica i secondi da attendere prima di ripetere la richiesta (es. 864000 = 10 diorni).
+- **interval**: obbligatorio se non è presente il parametro ``claims`` nella richiesta; indica i secondi da attendere prima di ripetere la richiesta (es. 864000 = 10 giorni).
 
 La risposta in caso di successo (HTTP 200) restituisce un oggetto ``CredentialClaimsResponse`` formattato come **Payload JSON**, accompagnato dagli header di integrità ``Agid-JWT-Signature`` e ``Digest``.
 
